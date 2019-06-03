@@ -14,6 +14,8 @@ from concurrent.futures.process import ProcessPoolExecutor
 import hashlib
 import portalocker
 import io
+from concurrent.futures.thread import ThreadPoolExecutor
+
 
 this_file_path = pathlib.Path(__file__).absolute().parent
 
@@ -77,7 +79,7 @@ def load_image_list():
     
     class DelayedFileList:
         def __init__(self, filename):
-            self.__loader = ProcessPoolExecutor(4)
+            self.__loader = ThreadPoolExecutor(4)
     
             self.__filehandle = open(filename, "r", encoding="iso-8859-1") # :type self.__filehandle: typing.TextIO
             self.__lines = 0
@@ -129,5 +131,32 @@ def load_image_list():
             
     result = DelayedFileList(this_file_path / "fall11_urls.txt")
     return result
-    
 
+
+class TorchWrapper:
+    def __init__(self, obj):
+        self.obj = obj
+        
+    def __len__(self):
+        return len(self.obj)
+
+    def __getitem__(self, i):
+        print(i)
+        item = self.obj[i]
+        
+        image_data = None
+        if item is not None:
+            image_data = item.load()
+        
+        if image_data is None:
+            return {
+                "data": np.zeros((100, 100, 3), dtype=np.uint8),
+                "seg": np.zeros((100, 100, 3), dtype=np.uint8),
+                "fnames": np.uint8(i)
+            }
+        else:
+            return {
+                "data": image_data.astype(np.uint8),
+                "seq": image_data.astype(np.uint8),
+                "fnames": np.uint8(i)
+            }
