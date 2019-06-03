@@ -39,7 +39,7 @@ def get_config():
         device="cuda",  # 'cuda' is the default CUDA device, you can use also 'cpu'. For more information, see https://pytorch.org/docs/stable/notes/cuda.html
 
         # Logging parameters
-        name='FinetuneSpleenforSpleen',
+        name='FinetuneHeartforSpleen',
         author='kvw',  # Author of this project
         plot_freq=10,  # How often should stuff be shown in visdom
         append_rnd_string=False,
@@ -47,7 +47,7 @@ def get_config():
 
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
         do_load_checkpoint=True,
-        checkpoint_filename='checkpoint_spleen_latest.pth.tar',
+        checkpoint_filename='checkpoint_heart_latest.pth.tar',
         checkpoint_dir='./models/',
         fine_tune='classy',
 
