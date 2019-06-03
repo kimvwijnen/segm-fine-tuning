@@ -39,15 +39,16 @@ def get_config():
         device="cuda",  # 'cuda' is the default CUDA device, you can use also 'cpu'. For more information, see https://pytorch.org/docs/stable/notes/cuda.html
 
         # Logging parameters
-        name='Basic_Unet Heart',
+        name='FinetuneSpleenforHeart',
         author='kvw',  # Author of this project
         plot_freq=10,  # How often should stuff be shown in visdom
         append_rnd_string=False,
-        start_visdom=True,
+        start_visdom=False,
 
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
-        do_load_checkpoint=False,
-        checkpoint_dir='',
+        do_load_checkpoint=True,
+        checkpoint_dir='./models/checkpoint_spleen_latest.pth.tar',
+        fine_tune='classy',
 
         # Adapt to your own path, if needed.
         download_data=False,
@@ -60,6 +61,10 @@ def get_config():
         data_test_dir=os.path.join(data_root_dir, 'Task02_Heart/preprocessed'),  # This is where your test data is stored
 
         split_dir=os.path.join(data_root_dir, 'Task02_Heart'),  # This is where the 'splits.pkl' file is located, that holds your splits.
+
+        # Testing
+        visualize_segm = True
+
     )
 
     print(c)
