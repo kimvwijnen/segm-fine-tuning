@@ -35,6 +35,14 @@ def unfreeze_block_parameters(model, block_names, block_numbers, verbose=False):
     :param block_numbers: list of block numbers (same length as block_names)
     :param layer numbers: list of layer numbers
     :return:
+
+    example: only train (unfreeze) last 3 layers of U-net (classifier layers)
+    from networks.utilities import unfreeze_block_parameters
+    block_names = ['expanding']
+    block_layers = [4]
+
+unfreeze_block_parameters(model, block_names, block_layers, verbose=True)
+
     """
     layer_names = []
     for block_name, block_number in zip(block_names, block_numbers):
