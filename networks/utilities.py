@@ -26,7 +26,7 @@ model_block_names = {'contracting':
                      }
 
 
-def unfreeze_block_parameters(model, block_names=['expanding'], block_numbers=[4], verbose=False):
+def unfreeze_block_parameters(model, block_names=[], block_numbers=[], verbose=False):
     """
     :param model: pytorch nn.Module object
     :param block_names: list of block names
