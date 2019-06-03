@@ -27,7 +27,8 @@ from experiments.UNetExperiment import UNetExperiment
 if __name__ == "__main__":
     c = get_config()
 
-    download_dataset(dest_path=c.data_root_dir, dataset=c.dataset_name, id=c.google_drive_id)
+    if c.download_data:
+        download_dataset(dest_path=c.data_root_dir, dataset=c.dataset_name, id=c.google_drive_id)
 
     print('Preprocessing data. [STARTED]')
     preprocess_data(root_dir=os.path.join(c.data_root_dir, c.dataset_name))

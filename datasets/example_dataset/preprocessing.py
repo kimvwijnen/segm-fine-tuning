@@ -24,12 +24,15 @@ import numpy as np
 from datasets.utils import reshape
 from utilities.file_and_folder_operations import subfiles
 
+from configs.Config_unet import get_config
 
-def preprocess_data(root_dir, y_shape=64, z_shape=64):
+
+def preprocess_data(root_dir):   #y_shape=64, z_shape=64):
+    c = get_config()
     image_dir = os.path.join(root_dir, 'imagesTr')
     label_dir = os.path.join(root_dir, 'labelsTr')
     output_dir = os.path.join(root_dir, 'preprocessed')
-    classes = 3
+    classes = c.num_classes
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -57,10 +60,13 @@ def preprocess_data(root_dir, y_shape=64, z_shape=64):
         # normalize images
         image = (image - image.min())/(image.max()-image.min())
 
-        image = reshape(image, append_value=0, new_shape=(image.shape[0], y_shape, z_shape))
-        label = reshape(label, append_value=0, new_shape=(label.shape[0], y_shape, z_shape))
+        image = np.swapaxes(image, 0, 2)
+        label = np.swapaxes(label, 0, 2)
 
-        result = np.stack((image, label))
+        result = reshape(np.stack([image, label], axis=0), crop_size=c.patch_size)
+
+        # image = reshape(image, append_value=0, new_shape=(image.shape[0], y_shape, z_shape))
+        # label = reshape(label, append_value=0, new_shape=(label.shape[0], y_shape, z_shape))
 
         np.save(os.path.join(output_dir, f.split('.')[0]+'.npy'), result)
         print(f)
