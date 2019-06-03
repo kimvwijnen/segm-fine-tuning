@@ -47,7 +47,8 @@ def get_config():
 
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
         do_load_checkpoint=True,
-        checkpoint_dir='./models/checkpoint_spleen_latest.pth.tar',
+        checkpoint_filename='checkpoint_spleen_latest.pth.tar',
+        checkpoint_dir='./models/',
         fine_tune='classy',
 
         # Adapt to your own path, if needed.

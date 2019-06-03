@@ -124,7 +124,7 @@ class UNetExperiment(PytorchExperiment):
             if self.config.checkpoint_dir == '':
                 print('checkpoint_dir is empty, please provide directory to load checkpoint.')
             else:
-                self.load_checkpoint(name=self.config.checkpoint_dir, save_types=("model"))
+                self.load_checkpoint(name=self.config.checkpoint_filename, save_types=("model"), path=self.config.checkpoint_dir)
 
             if self.config.fine_tune=='classy':
                 unfreeze_block_parameters(model=self.model)
