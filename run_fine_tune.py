@@ -44,9 +44,9 @@ if __name__ == "__main__":
     exp = UNetExperiment(config=c, name=c.name, n_epochs=c.n_epochs,
                          seed=42, append_rnd_to_name=c.append_rnd_string, globs=globals(),
                          # visdomlogger_kwargs={"auto_start": c.start_visdom},
-                         # loggers={
-                         #     "visdom": ("visdom", {"auto_start": c.start_visdom})
-                         # }
+                         loggers={
+                             "visdom": ("visdom", {"auto_start": c.start_visdom})
+                         }
                          )
 
     exp.run()

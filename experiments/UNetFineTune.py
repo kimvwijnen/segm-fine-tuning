@@ -31,46 +31,7 @@ from trixi.experiment.pytorchexperiment import PytorchExperiment
 from networks.RecursiveUNet import UNet
 from loss_functions.dice_loss import SoftDiceLoss
 
-from torchvision.utils import save_image
-
-from networks.utilities import unfreeze_block_parameters
-
-
-class LabelTensorToColor(object):
-   def __call__(self, label):
-       label = label.squeeze()
-       colored_label = torch.zeros(3, label.size(0), label.size(1)).byte()
-       for i, color in enumerate(class_color):
-           mask = label.eq(i)
-           for j in range(3):
-               colored_label[j].masked_fill_(mask, color[j])
-
-       return colored_label
-
-
-def segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter):
-    # Rescale data
-    data = (mr_data + mr_data.min()) / mr_data.max() * 256
-    data = data.type(torch.uint8)
-
-    # Make classes color
-    mr_target = mr_target.cpu()
-    target_list = []
-    for i in range(mr_data.size()[0]):
-        target_list.append(color_class_converter(mr_target[i]))
-    target = torch.stack(target_list)
-
-    # Same color as target
-    pred_argmax = pred_argmax.cpu()
-    pred_list = []
-    for i in range(mr_data.size()[0]):
-        pred_list.append(color_class_converter(pred_argmax[i]))
-    pred = torch.stack(pred_list)
-
-    save_image(torch.cat([data.repeat(1, 3, 1, 1).cpu(), target, pred]), 'data_target_prediction.png', nrow=8)
-
-
-class UNetExperiment(PytorchExperiment):
+class UNetFineTune(PytorchExperiment):
     """
     The UnetExperiment is inherited from the PytorchExperiment. It implements the basic life cycle for a segmentation task with UNet(https://arxiv.org/abs/1505.04597).
     It is optimized to work with the provided NumpyDataLoader.
@@ -116,7 +77,6 @@ class UNetExperiment(PytorchExperiment):
         self.ce_loss = torch.nn.CrossEntropyLoss()  # No softmax for CE Loss -> is implemented in torch!
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
-
         self.scheduler = ReduceLROnPlateau(self.optimizer, 'min')
 
         # If directory for checkpoint is provided, we load it.
@@ -124,10 +84,7 @@ class UNetExperiment(PytorchExperiment):
             if self.config.checkpoint_dir == '':
                 print('checkpoint_dir is empty, please provide directory to load checkpoint.')
             else:
-                self.load_checkpoint(name=self.config.checkpoint_filename, save_types=("model"), path=self.config.checkpoint_dir)
-
-            if self.config.fine_tune=='classy':
-                unfreeze_block_parameters(model=self.model)
+                self.load_checkpoint(name=self.config.checkpoint_dir, save_types=("model"))
 
         self.save_checkpoint(name="checkpoint_start")
         self.elog.print('Experiment set up.')
@@ -213,10 +170,6 @@ class UNetExperiment(PytorchExperiment):
         gt_dict = defaultdict(list)
 
         batch_counter = 0
-
-        if self.config.visualize_segm:
-            color_class_converter = LabelTensorToColor()
-
         with torch.no_grad():
             for data_batch in self.test_data_loader:
                 print('testing...', batch_counter)
@@ -228,9 +181,6 @@ class UNetExperiment(PytorchExperiment):
 
                 pred = self.model(mr_data)
                 pred_argmax = torch.argmax(pred.data.cpu(), dim=1, keepdim=True)
-
-                if self.config.visualize_segm:
-                    segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter)
 
                 fnames = data_batch['fnames']
                 for i, fname in enumerate(fnames):
