@@ -81,7 +81,7 @@ def get_config_finetune_heart(finetune='last', exp_name='', checkpoint_filename=
         checkpoint_filename=checkpoint_filename,
         checkpoint_dir=checkpoint_dir,
         fine_tune=fine_tune_type,
-        block_names=['expanding'],
+        block_names=['expanding']*len(list_finetune),
         block_numbers=list_finetune, #1,2,3,4
         dont_load_lastlayer=dont_load_last,
 
