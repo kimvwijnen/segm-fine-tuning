@@ -91,6 +91,7 @@ def run_on_dataset():
 
     for model_name in models:
         # Load data
+        print('starting with ' + model_name)
         exp = UNetExperiment(config=c, name=c.name, n_epochs=c.n_epochs,
                              seed=42, append_rnd_to_name=c.append_rnd_string, globs=globals())
         exp.setup()
@@ -115,6 +116,7 @@ def run_on_dataset():
 
         model_res = {'modelname': model_name}
 
+        print('adding results to summary..')
         for nr, im in enumerate(im_scores):
             for cl in range(c.num_classes):
                 for m in metric_list:
@@ -133,7 +135,7 @@ def run_on_dataset():
 
         summary.to_csv('./output_experiment/summary_ims' + c.dataset_name + '.csv')
         summary_mean.to_csv('./output_experiment/summary_mean_' + c.dataset_name + '.csv')
-
+        print('..summary updated')
 
 if __name__ == "__main__":
 

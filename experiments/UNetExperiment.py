@@ -327,8 +327,8 @@ class UNetExperiment(PytorchExperiment):
                     pred_dict[fname[0]].append(pred_argmax[i].detach().cpu().numpy())
                     gt_dict[fname[0]].append(mr_target[i].detach().cpu().numpy())
 
-            if self.config.visualize_segm:
-                segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter, self.config)
+                if batch_counter == 1 and self.config.visualize_segm:
+                    segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter, self.config)
 
         test_ref_list = []
         for key in pred_dict.keys():
