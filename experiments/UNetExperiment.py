@@ -31,6 +31,10 @@ from trixi.experiment.pytorchexperiment import PytorchExperiment
 from networks.RecursiveUNet import UNet
 from loss_functions.dice_loss import SoftDiceLoss
 
+from trixi.util import name_and_iter_to_filename
+from networks.utilities import unfreeze_block_parameters
+
+
 class UNetExperiment(PytorchExperiment):
     """
     The UnetExperiment is inherited from the PytorchExperiment. It implements the basic life cycle for a segmentation task with UNet(https://arxiv.org/abs/1505.04597).
@@ -84,7 +88,11 @@ class UNetExperiment(PytorchExperiment):
             if self.config.checkpoint_dir == '':
                 print('checkpoint_dir is empty, please provide directory to load checkpoint.')
             else:
-                self.load_checkpoint(name=self.config.checkpoint_dir, save_types=("model"))
+                self.load_checkpoint(name=self.config.checkpoint_filename, save_types=("model"), path=self.config.checkpoint_dir)
+
+            if self.config.fine_tune == 'classy':
+                unfreeze_block_parameters(model=self.model, block_names=self.config.block_names,
+                                          block_numbers=self.config.block_numbers)
 
         self.save_checkpoint(name="checkpoint_start")
         self.elog.print('Experiment set up.')
@@ -195,3 +203,80 @@ class UNetExperiment(PytorchExperiment):
                                   json_output_file=self.elog.work_dir + "/{}_".format(self.config.author) + self.config.name + '.json')
 
         print("Scores:\n", scores)
+
+    # overloaded method from the base class PytorchExperiment
+    def load_checkpoint(self,
+                        name="checkpoint",
+                        save_types=("model", "optimizer", "simple", "th_vars", "results"),
+                        n_iter=None,
+                        iter_format="{:05d}",
+                        prefix=False,
+                        path=None):
+        """
+        Loads a checkpoint and restores the experiment.
+
+        Make sure you have your torch stuff already on the right devices beforehand,
+        otherwise this could lead to errors e.g. when making a optimizer step
+        (and for some reason the Adam states are not already on the GPU:
+        https://discuss.pytorch.org/t/loading-a-saved-model-for-continue-training/17244/3 )
+
+        Args:
+            name (str): The name of the checkpoint file
+            save_types (list or tuple): What kind of member variables should be loaded? Choices are:
+                "model" <-- Pytorch models,
+                "optimizer" <-- Optimizers,
+                "simple" <-- Simple python variables (basic types and lists/tuples),
+                "th_vars" <-- torch tensors,
+                "results" <-- The result dict
+            n_iter (int): Number of iterations. Together with the name, defined by the iter_format,
+                a file name will be created and searched for.
+            iter_format (str): Defines how the name and the n_iter will be combined.
+            prefix (bool): If True, the formatted n_iter will be prepended, otherwise appended.
+            path (str): If no path is given then it will take the current experiment dir and formatted
+                name, otherwise it will simply use the path and the formatted name to define the
+                checkpoint file.
+
+        """
+        if self.elog is None:
+            return
+
+        model_dict = {}
+        optimizer_dict = {}
+        simple_dict = {}
+        th_vars_dict = {}
+        results_dict = {}
+
+        if "model" in save_types:
+            model_dict = self.get_pytorch_modules()
+        if "optimizer" in save_types:
+            optimizer_dict = self.get_pytorch_optimizers()
+        if "simple" in save_types:
+            simple_dict = self.get_simple_variables()
+        if "th_vars" in save_types:
+            th_vars_dict = self.get_pytorch_variables()
+        if "results" in save_types:
+            results_dict = {"results": self.results}
+
+        checkpoint_dict = {**model_dict, **optimizer_dict, **simple_dict, **th_vars_dict, **results_dict}
+
+        if n_iter is not None:
+            name = name_and_iter_to_filename(name,
+                                             n_iter,
+                                             ".pth.tar",
+                                             iter_format=iter_format,
+                                             prefix=prefix)
+
+        # Jorg Begin
+        exclude_layer_dict = {'model': ['model.model.5.weight', 'model.model.5.bias']}
+
+        # Jorg End
+        if path is None:
+            restore_dict = self.elog.load_checkpoint(name=name, **checkpoint_dict)
+        else:
+            checkpoint_path = os.path.join(path, name)
+            if checkpoint_path.endswith("/"):
+                checkpoint_path = checkpoint_path[:-1]
+            restore_dict = self.elog.load_checkpoint_static(checkpoint_file=checkpoint_path,
+                                                            exclude_layer_dict=exclude_layer_dict, **checkpoint_dict)
+
+        self.update_attributes(restore_dict)
