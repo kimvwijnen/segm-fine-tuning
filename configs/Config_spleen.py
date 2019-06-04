@@ -32,14 +32,14 @@ def get_config():
         in_channels=1,
         batch_size=16,
         patch_size=256,
-        n_epochs=100,
+        n_epochs=75,
         learning_rate=0.00005,
         fold=0,  # The 'splits.pkl' may contain multiple folds. Here we choose which one we want to use.
 
         device="cuda",  # 'cuda' is the default CUDA device, you can use also 'cpu'. For more information, see https://pytorch.org/docs/stable/notes/cuda.html
 
         # Logging parameters
-        name='FinetuneHeartforSpleen',
+        name='fine_tune_heart_for_spleen',
         author='kvw',  # Author of this project
         plot_freq=10,  # How often should stuff be shown in visdom
         append_rnd_string=False,
@@ -48,7 +48,7 @@ def get_config():
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
         do_load_checkpoint=True,
         checkpoint_filename='checkpoint_heart_latest.pth.tar',
-        checkpoint_dir='./models/',
+        checkpoint_dir='./models/heart_fold0/',
         fine_tune='classy',
         block_names=['expanding'],
         block_numbers=[4], #1,2,3,4
