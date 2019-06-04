@@ -19,8 +19,8 @@ import os
 
 from trixi.util import Config
 
-def get_config(dataset="ACDC", finetune='expanding'):
-    # finetune='last' or '' or 'expanding'
+def get_config(dataset="spleen", finetune='up_path'):
+    # finetune='last' or '' or 'up_path'
     # dataset = 'ACDC' etc
 
     if dataset == "ACDC":
@@ -31,7 +31,6 @@ def get_config(dataset="ACDC", finetune='expanding'):
         checkpoint_filename = 'checkpoint_last.pth.tar'
         checkpoint_dir = './models/neobrains_fold1/'
         exp_name = 'fine_tune_neobrains_for_heart'
-
     else:      #elif dataset == "spleen":
         checkpoint_filename = 'checkpoint_spleen_latest.pth.tar'
         checkpoint_dir = './models/spleen_fold0/'
