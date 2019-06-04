@@ -97,7 +97,7 @@ def run_on_dataset():
         exp.test_data_loader.do_reshuffle = False
 
         # Load checkpoint
-        checkpoint = torch.load('./models/' + model_name)
+        checkpoint = torch.load(model_name)
         exp.model.load_state_dict(checkpoint['model'])
 
         # exp.model.eval() # done in UNetExperiment

@@ -32,7 +32,7 @@ def get_config(dataset="ACDC", finetune='expanding'):
         checkpoint_dir = './models/neobrains_fold1/'
         exp_name = 'fine_tune_neobrains_for_heart'
 
-    else:#elif dataset == "spleen":
+    else:      #elif dataset == "spleen":
         checkpoint_filename = 'checkpoint_spleen_latest.pth.tar'
         checkpoint_dir = './models/spleen_fold0/'
         exp_name = 'fine_tune_spleen_for_heart'
