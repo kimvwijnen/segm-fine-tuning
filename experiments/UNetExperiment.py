@@ -53,10 +53,10 @@ class LabelTensorToColor(object):
 
        label = label.squeeze()
        colored_label = torch.zeros(3, label.size(0), label.size(1)).byte()
-       for i, color in enumerate(nr_classes):
+       for i in range(nr_classes):
            mask = label.eq(i)
            for j in range(3):
-               colored_label[j].masked_fill_(mask, color[j])
+               colored_label[j].masked_fill_(mask, class_color[i][j])
 
        return colored_label
 
