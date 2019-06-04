@@ -36,8 +36,15 @@ from torchvision.utils import save_image
 from networks.utilities import unfreeze_block_parameters
 
 
+
 class LabelTensorToColor(object):
    def __call__(self, label):
+       class_color = [
+           (0, 0, 0),
+           (128, 0, 0),
+           (0, 0, 128),
+       ]
+
        label = label.squeeze()
        colored_label = torch.zeros(3, label.size(0), label.size(1)).byte()
        for i, color in enumerate(class_color):
@@ -93,7 +100,7 @@ class UNetExperiment(PytorchExperiment):
         pkl_dir = self.config.split_dir
         with open(os.path.join(pkl_dir, "splits.pkl"), 'rb') as f:
             splits = pickle.load(f)
-
+        unfreeze_block_parameters
         tr_keys = splits[self.config.fold]['train']
         val_keys = splits[self.config.fold]['val']
         test_keys = splits[self.config.fold]['test']
@@ -127,7 +134,8 @@ class UNetExperiment(PytorchExperiment):
                 self.load_checkpoint(name=self.config.checkpoint_filename, save_types=("model"), path=self.config.checkpoint_dir)
 
             if self.config.fine_tune=='classy':
-                unfreeze_block_parameters(model=self.model)
+                unfreeze_block_parameters(model=self.model, block_names=self.config.block_names,
+                                          block_numbers=self.config.block_numbers)
 
         self.save_checkpoint(name="checkpoint_start")
         self.elog.print('Experiment set up.')

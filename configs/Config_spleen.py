@@ -50,6 +50,8 @@ def get_config():
         checkpoint_filename='checkpoint_heart_latest.pth.tar',
         checkpoint_dir='./models/',
         fine_tune='classy',
+        block_names=['expanding'],
+        block_numbers=[4], #1,2,3,4
 
         # Adapt to your own path, if needed.
         download_data=False,

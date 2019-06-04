@@ -30,10 +30,10 @@ def get_config():
         # Train parameters
         num_classes=2,
         in_channels=1,
-        batch_size=16,
+        batch_size=8,
         patch_size=256,
         n_epochs=100,
-        learning_rate=0.00005,
+        learning_rate=0.0002,
         fold=0,  # The 'splits.pkl' may contain multiple folds. Here we choose which one we want to use.
 
         device="cuda",  # 'cuda' is the default CUDA device, you can use also 'cpu'. For more information, see https://pytorch.org/docs/stable/notes/cuda.html
@@ -50,18 +50,20 @@ def get_config():
         checkpoint_filename='checkpoint_heart_latest.pth.tar',
         checkpoint_dir='./models/',
         fine_tune='classy',
+        block_names=['expanding'],
+        block_numbers=[4], #1,2,3,4
 
         # Adapt to your own path, if needed.
         download_data=False,
         google_drive_id='1RzPB1_bqzQhlWvU-YGvZzhx2omcDh38C',
-        dataset_name='Task09_Spleen',
+        dataset_name='Task02_Heart',
         base_dir=os.path.abspath('output_experiment'),  # Where to log the output of the experiment.
 
         data_root_dir=data_root_dir,  # The path where the downloaded dataset is stored.
-        data_dir=os.path.join(data_root_dir, 'Task09_Spleen/preprocessed'),  # This is where your training and validation data is stored
-        data_test_dir=os.path.join(data_root_dir, 'Task09_Spleen/preprocessed'),  # This is where your test data is stored
+        data_dir=os.path.join(data_root_dir, 'Task02_Heart/preprocessed'),  # This is where your training and validation data is stored
+        data_test_dir=os.path.join(data_root_dir, 'Task02_Heart/preprocessed'),  # This is where your test data is stored
 
-        split_dir=os.path.join(data_root_dir, 'Task09_Spleen'),  # This is where the 'splits.pkl' file is located, that holds your splits.
+        split_dir=os.path.join(data_root_dir, 'Task02_Heart'),  # This is where the 'splits.pkl' file is located, that holds your splits.
 
         # Testing
         visualize_segm = True
