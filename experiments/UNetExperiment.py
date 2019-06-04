@@ -33,21 +33,27 @@ from loss_functions.dice_loss import SoftDiceLoss
 
 from torchvision.utils import save_image
 
+from trixi.util import name_and_iter_to_filename
 from networks.utilities import unfreeze_block_parameters
 
 
-
 class LabelTensorToColor(object):
-   def __call__(self, label):
+   def __call__(self, label, nr_classes):
        class_color = [
            (0, 0, 0),
            (128, 0, 0),
            (0, 0, 128),
+           (0, 128, 128),
+           (128, 128, 0),
+           (128, 0, 128),
+           (255, 255, 51),
+           (102, 255, 255),
+           (102, 255, 102),
        ]
 
        label = label.squeeze()
        colored_label = torch.zeros(3, label.size(0), label.size(1)).byte()
-       for i, color in enumerate(class_color):
+       for i, color in enumerate(nr_classes):
            mask = label.eq(i)
            for j in range(3):
                colored_label[j].masked_fill_(mask, color[j])
@@ -55,7 +61,7 @@ class LabelTensorToColor(object):
        return colored_label
 
 
-def segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter):
+def segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter, config):
     # Rescale data
     data = (mr_data + mr_data.min()) / mr_data.max() * 256
     data = data.type(torch.uint8)
@@ -64,17 +70,17 @@ def segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter):
     mr_target = mr_target.cpu()
     target_list = []
     for i in range(mr_data.size()[0]):
-        target_list.append(color_class_converter(mr_target[i]))
+        target_list.append(color_class_converter(mr_target[i], config.num_classes))
     target = torch.stack(target_list)
 
     # Same color as target
     pred_argmax = pred_argmax.cpu()
     pred_list = []
     for i in range(mr_data.size()[0]):
-        pred_list.append(color_class_converter(pred_argmax[i]))
+        pred_list.append(color_class_converter(pred_argmax[i], config.num_classes))
     pred = torch.stack(pred_list)
 
-    save_image(torch.cat([data.repeat(1, 3, 1, 1).cpu(), target, pred]), 'data_target_prediction.png', nrow=8)
+    save_image(torch.cat([data.repeat(1, 3, 1, 1).cpu(), target, pred]), 'output_experiment/' + config.name + '_data_target_prediction.png', nrow=8)
 
 
 class UNetExperiment(PytorchExperiment):
@@ -100,7 +106,7 @@ class UNetExperiment(PytorchExperiment):
         pkl_dir = self.config.split_dir
         with open(os.path.join(pkl_dir, "splits.pkl"), 'rb') as f:
             splits = pickle.load(f)
-        unfreeze_block_parameters
+
         tr_keys = splits[self.config.fold]['train']
         val_keys = splits[self.config.fold]['val']
         test_keys = splits[self.config.fold]['test']
@@ -139,6 +145,85 @@ class UNetExperiment(PytorchExperiment):
 
         self.save_checkpoint(name="checkpoint_start")
         self.elog.print('Experiment set up.')
+
+
+    # overloaded method from the base class PytorchExperiment
+    def load_checkpoint(self,
+                        name="checkpoint",
+                        save_types=("model", "optimizer", "simple", "th_vars", "results"),
+                        n_iter=None,
+                        iter_format="{:05d}",
+                        prefix=False,
+                        path=None):
+        """
+        Loads a checkpoint and restores the experiment.
+        Make sure you have your torch stuff already on the right devices beforehand,
+        otherwise this could lead to errors e.g. when making a optimizer step
+        (and for some reason the Adam states are not already on the GPU:
+        https://discuss.pytorch.org/t/loading-a-saved-model-for-continue-training/17244/3 )
+        Args:
+            name (str): The name of the checkpoint file
+            save_types (list or tuple): What kind of member variables should be loaded? Choices are:
+                "model" <-- Pytorch models,
+                "optimizer" <-- Optimizers,
+                "simple" <-- Simple python variables (basic types and lists/tuples),
+                "th_vars" <-- torch tensors,
+                "results" <-- The result dict
+            n_iter (int): Number of iterations. Together with the name, defined by the iter_format,
+                a file name will be created and searched for.
+            iter_format (str): Defines how the name and the n_iter will be combined.
+            prefix (bool): If True, the formatted n_iter will be prepended, otherwise appended.
+            path (str): If no path is given then it will take the current experiment dir and formatted
+                name, otherwise it will simply use the path and the formatted name to define the
+                checkpoint file.
+        """
+        if self.elog is None:
+            return
+
+        model_dict = {}
+        optimizer_dict = {}
+        simple_dict = {}
+        th_vars_dict = {}
+        results_dict = {}
+
+        if "model" in save_types:
+            model_dict = self.get_pytorch_modules()
+        if "optimizer" in save_types:
+            optimizer_dict = self.get_pytorch_optimizers()
+        if "simple" in save_types:
+            simple_dict = self.get_simple_variables()
+        if "th_vars" in save_types:
+            th_vars_dict = self.get_pytorch_variables()
+        if "results" in save_types:
+            results_dict = {"results": self.results}
+
+        checkpoint_dict = {**model_dict, **optimizer_dict, **simple_dict, **th_vars_dict, **results_dict}
+
+        if n_iter is not None:
+            name = name_and_iter_to_filename(name,
+                                             n_iter,
+                                             ".pth.tar",
+                                             iter_format=iter_format,
+                                             prefix=prefix)
+
+        # Jorg Begin
+        if self.config.dont_load_lastlayer:
+            exclude_layer_dict = {'model': ['model.model.5.weight', 'model.model.5.bias']}
+        else:
+            exclude_layer_dict = {}
+        # Jorg End
+
+        if path is None:
+            restore_dict = self.elog.load_checkpoint(name=name, **checkpoint_dict)
+        else:
+            checkpoint_path = os.path.join(path, name)
+            if checkpoint_path.endswith("/"):
+                checkpoint_path = checkpoint_path[:-1]
+            restore_dict = self.elog.load_checkpoint_static(checkpoint_file=checkpoint_path,
+                                                            exclude_layer_dict=exclude_layer_dict, **checkpoint_dict)
+
+        self.update_attributes(restore_dict)
+
 
     def train(self, epoch):
         self.elog.print('=====TRAIN=====')
@@ -237,13 +322,13 @@ class UNetExperiment(PytorchExperiment):
                 pred = self.model(mr_data)
                 pred_argmax = torch.argmax(pred.data.cpu(), dim=1, keepdim=True)
 
-                if self.config.visualize_segm:
-                    segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter)
-
                 fnames = data_batch['fnames']
                 for i, fname in enumerate(fnames):
                     pred_dict[fname[0]].append(pred_argmax[i].detach().cpu().numpy())
                     gt_dict[fname[0]].append(mr_target[i].detach().cpu().numpy())
+
+            if self.config.visualize_segm:
+                segm_visualization(mr_data, mr_target, pred_argmax, color_class_converter, self.config)
 
         test_ref_list = []
         for key in pred_dict.keys():
@@ -251,5 +336,7 @@ class UNetExperiment(PytorchExperiment):
 
         scores = aggregate_scores(test_ref_list, evaluator=Evaluator, json_author=self.config.author, json_task=self.config.name, json_name=self.config.name,
                                   json_output_file=self.elog.work_dir + "/{}_".format(self.config.author) + self.config.name + '.json')
+
+        self.scores = scores
 
         print("Scores:\n", scores)

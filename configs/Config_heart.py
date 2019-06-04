@@ -52,6 +52,7 @@ def get_config():
         fine_tune='classy',
         block_names=['expanding'],
         block_numbers=[4], #1,2,3,4
+        dont_load_lastlayer=False,
 
         # Adapt to your own path, if needed.
         download_data=False,
