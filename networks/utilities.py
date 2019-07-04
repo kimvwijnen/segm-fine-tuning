@@ -26,13 +26,13 @@ model_block_names = {'contracting':
                      }
 
 UNFREEZE_OPTIONS = {'expanding_all':
-                      {'block_names': ['contracting'] * 4,
+                      {'block_names': ['expanding'] * 4,
                        'block_numbers': np.arange(1, 5)
                       },
                     'expanding_plus1':
-                      {'block_names': ['contracting'] * 4 + ['inner'] + ['contracting'],
+                      {'block_names': ['expanding'] * 4 + ['inner'] + ['contracting'],
                        'block_numbers': np.concatenate((np.arange(1, 5), np.array([1, 4])))
-                      }
+                      } # unfreezes expanding blok 1, 2, 3, 4; inner blok 1; contracting blok 4
                    }
 
 
@@ -55,6 +55,7 @@ block_names=['contracting', 'contracting', 'expanding', 'expanding'],
     block_numbers = UNFREEZE_OPTIONS[fine_tune_option]['block_numbers']
     for block_name, block_number in zip(block_names, block_numbers):
         layer_names.extend(model_block_names[block_name][block_number])
+    print('Layers that will be trained:')
     print(layer_names)
     for name, child in model.named_children():
         for param_name, param in child.named_parameters():

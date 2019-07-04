@@ -22,25 +22,23 @@ from trixi.util import Config
 
 def get_config():
 
-    dataset = 'atrial'
-    # TODO dataset = 'atrial' (for training the atrial on 5 images)
+    dataset = 'atrial'  # TODO dataset = 'atrial' (for training the atrial on 5 images)
+    fine_tune = 'None'  # TODO (no freezing, training whole network from scratch)
 
-    fine_tune = 'None'
-    # TODO 'None' (no freezing, training whole network from scratch)
+    download_data_from_drive = True # TODO after running once, change to False
 
-    dataset = 'brats'
-    # TODO brats with 3 fine tuning options:
-
-    # TODO fine_tune = 'None' (no freezing, training whole network)
-    # TODO fine_tune = 'expanding_all' (for freezing contracting/left path, training expanding/right path)
-    # TODO fine_tune = 'expanding_plus1' (for freezing the first bit of contracting path, training bottom part and expanding path)
+    # dataset = 'brats' # TODO uncomment
+    # TODO with 3 fine tuning options, uncomment sequentially:
+    # fine_tune = 'None'  # (no freezing, training whole network)
+    # fine_tune = 'expanding_all' # (for freezing contracting/left path, training expanding/right path)
+    # fine_tune = 'expanding_plus1' # (for freezing the first bit of contracting path, training bottom part and expanding path)
 
     if dataset == 'atrial':
-        checkpoint_dir = '' # leave empty to train from scratch for atrial segmentation on 5 samples
+        checkpoint_dir = '' # leave empty to train from scratch for atrial segmentation (on 5 samples)
         checkpoint_filename = ''
         exp_name = 'train_from_scratch_heart'
     elif dataset == 'brats':
-        checkpoint_dir = './output_experiments/[dir_atrial_exp]/checkpoint/' # TODO add name of directory with model
+        checkpoint_dir = './output_experiment/[dir_brats_exp]/checkpoint/' # TODO add name of directory with model
         checkpoint_filename = 'checkpoint_last.pth.tar'
         exp_name = 'brats_for_atrialsegm_finetune_' + 'all_layers' if fine_tune=='None' else fine_tune
     else:
@@ -50,14 +48,17 @@ def get_config():
                           exp_name=exp_name,
                           checkpoint_filename=checkpoint_filename,
                           checkpoint_dir=checkpoint_dir,
-                          nr_train_samples=5)
+                          nr_train_samples=5,
+                         download_data_from_drive=download_data_from_drive)
     # training on 5 images (if want to use original split use train_samples=0 instead of train_samples=5
 
     print(c)
     return c
 
 
-def get_config_heart(fine_tune_type='None', exp_name='', checkpoint_filename='', checkpoint_dir='', nr_train_samples=0):
+def get_config_heart(fine_tune_type='None', exp_name='',
+                     checkpoint_filename='', checkpoint_dir='',
+                     nr_train_samples=0, download_data_from_drive=False):
     # Set your own path, if needed.
     data_root_dir = os.path.abspath('data')  # The path where the downloaded dataset is stored.
 
@@ -90,7 +91,7 @@ def get_config_heart(fine_tune_type='None', exp_name='', checkpoint_filename='',
         fine_tune=fine_tune_type,
 
         # Adapt to your own path, if needed.
-        download_data=False,
+        download_data=download_data_from_drive,
         google_drive_id='1RzPB1_bqzQhlWvU-YGvZzhx2omcDh38C',
         dataset_name='Task02_Heart',
         base_dir=os.path.abspath('output_experiment'),  # Where to log the output of the experiment.
@@ -105,10 +106,10 @@ def get_config_heart(fine_tune_type='None', exp_name='', checkpoint_filename='',
         # This is where the 'splits.pkl' file is located, that holds your splits.
         train_samples=nr_train_samples,
         # This is the amount of samples used in the train set. Use 0 for original split (1/2 train, 1/4 val, 1/4 test)
+        # The validation set will be the same size, and the test set is the rest of the images
 
         # Testing
         visualize_segm=True
-
     )
 
     print(c)

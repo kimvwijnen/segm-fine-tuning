@@ -32,9 +32,8 @@ def create_splits(output_dir, image_dir, train_samples=0):
         testset_size = len(npy_files)*25//100
     else:
         trainset_size = train_samples
-        val_test_size = len(npy_files) - train_samples
-        valset_size = val_test_size*25//100
-        testset_size = val_test_size*25//100
+        valset_size = train_samples
+        testset_size = len(npy_files) - (2 * train_samples)
 
     splits = []
     for split in range(0, 5):

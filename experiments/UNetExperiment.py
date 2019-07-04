@@ -135,7 +135,7 @@ class UNetExperiment(PytorchExperiment):
         # If directory for checkpoint is provided, we load it.
         if self.config.do_load_checkpoint:
             if self.config.checkpoint_dir == '':
-                print('checkpoint_dir is empty, please provide directory to load checkpoint.')
+                print('Checkpoint_dir is empty, training from scratch.')
             else:
                 self.load_checkpoint(name=self.config.checkpoint_filename, save_types=("model"), path=self.config.checkpoint_dir)
 
@@ -208,10 +208,11 @@ class UNetExperiment(PytorchExperiment):
                                              prefix=prefix)
 
         # Jorg Begin
-        if self.config.dont_load_lastlayer:
-            exclude_layer_dict = {'model': ['model.model.5.weight', 'model.model.5.bias']}
-        else:
-            exclude_layer_dict = {}
+        # if self.config.dont_load_lastlayer:
+        #     exclude_layer_dict = {'model': ['model.model.5.weight', 'model.model.5.bias']}
+        # else:
+        #     exclude_layer_dict = {}
+        exclude_layer_dict = {}
         # Jorg End
 
         if path is None:
