@@ -73,6 +73,7 @@ def get_config_deca_heart():
         do_load_checkpoint=True,
         checkpoint_dir='/home/jorg/models/hackathon/acdc_fold1/',
         checkpoint_filename="checkpoint_last.pth.tar",
+        do_fine_tune=True,
         fine_tune='classy',
         block_names=['expanding'],
         block_numbers=[4],  # 1,2,3,4
@@ -123,6 +124,7 @@ def get_config_neobrains():
 
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
         do_load_checkpoint=True,
+        do_fine_tune=True,
         checkpoint_dir='/home/jorg/models/hackathon/acdc_fold1/',
         checkpoint_filename="checkpoint_last.pth.tar",
         fine_tune='classy',
@@ -153,7 +155,7 @@ def get_config_acdc():
         update_from_argv=True,
         # Visdom config
         visdom_server="http://seize",
-        visdom_port=8030,
+        visdom_port=8330,
         # Train parameters
         num_classes=4,   # acdc=4
         in_channels=1,
@@ -174,11 +176,12 @@ def get_config_acdc():
 
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
         do_load_checkpoint=True,
-        checkpoint_dir='/home/jorg/models/hackathon/spleen_fold0/',
-        checkpoint_filename="checkpoint_spleen_latest.pth.tar",
+        do_fine_tune=True,
+        checkpoint_dir='/home/jorg/models/hackathon/heart_fold0/',
+        checkpoint_filename="checkpoint_heart_latest.pth.tar",
         fine_tune='classy',
-        block_names=['expanding'],
-        block_numbers=[4],  # 1,2,3,4
+        block_names=['contracting', 'contracting', 'expanding', 'expanding'],
+        block_numbers=[1, 2, 1, 2],  # 1,2,3,4
 
         # Adapt to your own path, if needed.
         google_drive_id='',
@@ -224,6 +227,7 @@ def get_config_hippocampus():
 
         do_instancenorm=True,  # Defines whether or not the UNet does a instance normalization in the contracting path
         do_load_checkpoint=True,
+        do_fine_tune=True,
         checkpoint_dir='/home/jorg/models/hackathon/acdc_fold1/',
         checkpoint_filename="checkpoint_last.pth.tar",
 
