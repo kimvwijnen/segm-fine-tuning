@@ -34,7 +34,7 @@ exp.setup()
 exp.test_data_loader.do_reshuffle = True
 
 # Load checkpoint
-checkpoint = torch.load('./output_experiment/20190529-181944_Basic_Unet/checkpoint/checkpoint_last.pth.tar')
+checkpoint = torch.load('./output_experiment/20190604-154315_fine_tune_spleen_for_heart/checkpoint/checkpoint_last.pth.tar')
 exp.model.load_state_dict(checkpoint['model'])
 
 exp.model.eval()

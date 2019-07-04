@@ -36,7 +36,7 @@ if __name__ == "__main__":
     if not exists(os.path.join(os.path.join(c.data_root_dir, c.dataset_name), 'preprocessed')):
         print('Preprocessing data. [STARTED]')
         preprocess_data(root_dir=os.path.join(c.data_root_dir, c.dataset_name)) #y_shape=c.patch_size, z_shape=c.patch_size)
-        create_splits(output_dir=c.split_dir, image_dir=c.data_dir)
+        create_splits(output_dir=c.split_dir, image_dir=c.data_dir, train_samples=c.train_samples)
         print('Preprocessing data. [DONE]')
     else:
         print('The data has already been preprocessed. It will not be preprocessed again. Delete the folder to enforce it.')

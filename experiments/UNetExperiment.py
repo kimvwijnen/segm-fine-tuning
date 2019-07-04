@@ -139,9 +139,10 @@ class UNetExperiment(PytorchExperiment):
             else:
                 self.load_checkpoint(name=self.config.checkpoint_filename, save_types=("model"), path=self.config.checkpoint_dir)
 
-            if self.config.fine_tune=='classy':
-                unfreeze_block_parameters(model=self.model, block_names=self.config.block_names,
-                                          block_numbers=self.config.block_numbers)
+            if self.config.fine_tune in ['expanding_all', 'expanding_plus1']:
+                # freeze part of the network, fine-tune the other part
+                unfreeze_block_parameters(model=self.model, fine_tune_option=self.config.fine_tune)
+                # else just train the whole network
 
         self.save_checkpoint(name="checkpoint_start")
         self.elog.print('Experiment set up.')

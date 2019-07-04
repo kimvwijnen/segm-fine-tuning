@@ -22,12 +22,19 @@ import os
 import numpy as np
 
 
-def create_splits(output_dir, image_dir):
+def create_splits(output_dir, image_dir, train_samples=0):
+    # train_samples: number of images to use in training set
     npy_files = subfiles(image_dir, suffix=".npy", join=False)
 
-    trainset_size = len(npy_files)*50//100
-    valset_size = len(npy_files)*25//100
-    testset_size = len(npy_files)*25//100
+    if train_samples == 0:
+        trainset_size = len(npy_files)*50//100
+        valset_size = len(npy_files)*25//100
+        testset_size = len(npy_files)*25//100
+    else:
+        trainset_size = train_samples
+        val_test_size = len(npy_files) - train_samples
+        valset_size = val_test_size*25//100
+        testset_size = val_test_size*25//100
 
     splits = []
     for split in range(0, 5):
