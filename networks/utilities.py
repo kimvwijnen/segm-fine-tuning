@@ -1,6 +1,6 @@
 
 from torch.optim import Adam
-
+import numpy as np
 
 # dictionary has has key1=high level block {'contracting', 'inner', 'expanding'}
 #                    key2=layer number, value is list with layer names: if you extend layer name with '.weight'
@@ -26,8 +26,53 @@ model_block_names = {'contracting':
                         },
                      }
 
+UNFREEZE_OPTIONS = {'expanding_all': 
+                      {'block_names': ['contracting'] * 4,
+                       'block_numbers': np.arange(1, 5)
+                      },
+                    'expanding_plus1': 
+                      {'block_names': ['contracting'] * 4 + ['inner'] + ['contracting'],
+                       'block_numbers': np.concatenate((np.arange(1, 5), np.array([1, 4])
+                      }
+                   }
 
-def unfreeze_block_parameters(model, block_names, block_numbers, verbose=False):
+
+def unfreeze_block_parameters(model, fine_tune_option, verbose=False):
+    """
+
+    :param model: pytorch nn.Module object
+    :param fine_tune_option: one of the following
+              'expanding_all': unfreeze complete expanding path
+              'expanding_plus1': unfreeze complete expanding path plus contracting block 4 and inner block
+    :return:
+
+    example: only train (unfreeze) last 3 layers of U-net (classifier layers)
+    from networks.utilities import unfreeze_block_parameters
+    block_names = ['expanding']
+    block_layers = [4]
+
+
+block_names=['contracting', 'contracting', 'expanding', 'expanding'],
+        block_numbers=[1, 2, 1, 2],  # 1,2,3,4
+
+    """
+    layer_names = []
+    block_names = UNFREEZE_OPTIONS[fine_tune_option]['block_names']
+    block_numbers = UNFREEZE_OPTIONS[fine_tune_option]['block_numbers']
+    for block_name, block_number in zip(block_names, block_numbers):
+        layer_names.extend(model_block_names[block_name][block_number])
+    print(layer_names)
+    for name, child in model.named_children():
+        for param_name, param in child.named_parameters():
+            param_name_stripped = (param_name.strip('.weight')).strip('.bias')
+            if param_name_stripped in layer_names:
+                if verbose:
+                    print("Unfreeze {}".format(param_name))
+                param.requires_grad = True
+            else:
+                param.requires_grad = False
+
+def unfreeze_block_parametersv2(model, block_names, block_numbers, verbose=False):
     """
 
     :param model: pytorch nn.Module object
@@ -40,6 +85,10 @@ def unfreeze_block_parameters(model, block_names, block_numbers, verbose=False):
     from networks.utilities import unfreeze_block_parameters
     block_names = ['expanding']
     block_layers = [4]
+
+
+block_names=['contracting', 'contracting', 'expanding', 'expanding'],
+        block_numbers=[1, 2, 1, 2],  # 1,2,3,4
 
 unfreeze_block_parameters(model, block_names, block_layers, verbose=True)
 
