@@ -32,7 +32,7 @@ UNFREEZE_OPTIONS = {'expanding_all':
                       },
                     'expanding_plus1': 
                       {'block_names': ['contracting'] * 4 + ['inner'] + ['contracting'],
-                       'block_numbers': np.concatenate((np.arange(1, 5), np.array([1, 4])
+                       'block_numbers': np.concatenate((np.arange(1, 5), np.array([1, 4])))
                       }
                    }
 
